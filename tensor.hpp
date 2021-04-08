@@ -29,6 +29,20 @@ public:
 		std::swap(a.val, b.val);
 	}
 
+	// overload the <<
+	friend std::ostream & operator<<(std::ostream &output,Vec<INT,DOUBLE> &x)
+	{
+		
+		output<<"Vec= "<<std::endl;
+
+		for(int i=0;i<x.len;i++)
+		{
+			output<<"     ";
+			output<<x.val[i]<<std::endl;
+		}
+
+		return output;
+	}
 	// overload the ()
 	DOUBLE & operator()(INT i);
 	DOUBLE & operator()(INT i) const;
@@ -243,10 +257,10 @@ public:
 				for(INT k=0;k<a_col;k++)
 				{
 					/* tmp += a(i,k)*b(k,j); */
-					tmp += a.val[i*a_row+k] * b.val[k*b_row+j];
+					tmp += a.val[i*a_col+k] * b.val[k*b_col+j];
 				}
 				/* res(i,j) = tmp; */
-				res.val[i*a_row+j] = tmp;
+				res.val[i*a_col+j] = tmp;
 			}
 		}
 
@@ -316,13 +330,13 @@ Mat<INT,DOUBLE> & Mat<INT,DOUBLE>::operator=(Mat<INT,DOUBLE> x)
 template<typename INT, typename DOUBLE>
 DOUBLE & Mat<INT,DOUBLE>::operator()(INT i, INT j)
 {
-	return this->val[i*row+j];
+	return this->val[i*col+j];
 }
 
 template<typename INT, typename DOUBLE>
 DOUBLE & Mat<INT,DOUBLE>::operator()(INT i, INT j) const
 {
-	return this->val[i*row+j];
+	return this->val[i*col+j];
 }
 
 template<typename INT, typename DOUBLE>
@@ -330,7 +344,7 @@ DOUBLE & Mat<INT,DOUBLE>::at(INT i, INT j)
 {
 	if(i >= 0 && i<row && j >= 0 && j < col)
 	{
-		return this->val[i*row+j];
+		return this->val[i*col+j];
 	}
 	else
 	{
@@ -346,7 +360,7 @@ DOUBLE & Mat<INT,DOUBLE>::at(INT i, INT j) const
 {
 	if(i >= 0 && i<row && j >= 0 && j < col)
 	{
-		return this->val[i*row+j];
+		return this->val[i*col+j];
 	}
 	else
 	{

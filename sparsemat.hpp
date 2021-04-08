@@ -1,6 +1,7 @@
 #ifndef SPARSEMAT_H
 #define SPARSEMAT_H
 #include <string>
+#include <string.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -477,17 +478,17 @@ void SpaCOO<INT,DOUBLE>::ReadMat0(std::string file_name)
 	/* if(row_vec != nullptr) */
 	/* 	delete[] row_vec; */
 	/* row_vec = new INT[tmp_nnz]; */
-	ResizeRowVec(tmp_nnz);
+	this->ResizeRowVec(tmp_nnz);
 
 	/* if(col_vec != nullptr) */
 	/* 	delete[] col_vec; */
 	/* col_vec = new INT[tmp_nnz]; */
-	ResizeColVec(tmp_nnz);
+	this->ResizeColVec(tmp_nnz);
 
 	/* if(val != nullptr) */
 	/* 	delete[] val; */
 	/* val = new DOUBLE[tmp_nnz]; */
-	ResizeValVec(tmp_nnz);
+	this->ResizeValVec(tmp_nnz);
 
 	row = tmp_row;
 	col = tmp_col;
@@ -526,17 +527,17 @@ void SpaCOO<INT,DOUBLE>::ReadMat1(std::string file_name)
 	/* if(row_vec != nullptr) */
 	/* 	delete[] row_vec; */
 	/* row_vec = new INT[tmp_nnz]; */
-	ResizeRowVec(tmp_nnz);
+	this->ResizeRowVec(tmp_nnz);
 
 	/* if(col_vec != nullptr) */
 	/* 	delete[] col_vec; */
 	/* col_vec = new INT[tmp_nnz]; */
-	ResizeColVec(tmp_nnz);
+	this->ResizeColVec(tmp_nnz);
 
 	/* if(val != nullptr) */
 	/* 	delete[] val; */
 	/* val = new DOUBLE[tmp_nnz]; */
-	ResizeValVec(tmp_nnz);
+	this->ResizeValVec(tmp_nnz);
 
 	row = tmp_row;
 	col = tmp_col;
@@ -563,6 +564,7 @@ void SpaCOO<INT,DOUBLE>::ReadMat1(std::string file_name)
 template<typename INT, typename DOUBLE>
 void  SpaCOO<INT,DOUBLE>::PrintPartialMat(INT num)
 {
+	std::cout<<"sparse Mat ="<<std::endl;
 	for(INT i=0;i<num;i++)
 		std::cout<<this->row_vec[i]<<"   "<<this->col_vec[i]<<"   "<<this->val[i]<<std::endl;
 }
@@ -601,7 +603,7 @@ SpaCSR<INT,DOUBLE> & SpaCSR<INT,DOUBLE>::operator=(SpaCSR<INT,DOUBLE> csr)
 template<typename INT, typename DOUBLE>
 void SpaCSR<INT,DOUBLE>::COO2CSR(const SpaCOO<INT,DOUBLE> & coo)
 {
-	InitRowVec(0,row+1);
+	this->InitRowVec(0,row+1);
 	for(INT i=0;i<nnz;i++)
 		this->row_vec[coo.row_vec[i] + 1] += 1;
 
@@ -656,17 +658,17 @@ SpaCSR<INT,DOUBLE> & SpaCSR<INT,DOUBLE>::operator=(const SpaCOO<INT,DOUBLE> & co
 	/* if(row_vec != nullptr) */
 	/* 	delete[] row_vec; */
 	/* row_vec = new INT[row+1]; */
-	ResizeRowVec(row+1);
+	this->ResizeRowVec(row+1);
 
 	/* if(col_vec != nullptr) */
 	/* 	delete[] col_vec; */
 	/* col_vec = new INT[nnz]; */
-	ResizeColVec(nnz);
+	this->ResizeColVec(nnz);
 
 	/* if(val != nullptr) */
 	/* 	delete[] val; */
 	/* val = new DOUBLE[nnz]; */
-	ResizeValVec(nnz);
+	this->ResizeValVec(nnz);
 
 	COO2CSR(coo);
 
@@ -677,6 +679,7 @@ SpaCSR<INT,DOUBLE> & SpaCSR<INT,DOUBLE>::operator=(const SpaCOO<INT,DOUBLE> & co
 template<typename INT, typename DOUBLE>
 void SpaCSR<INT,DOUBLE>::PrintPartialMat(INT num)
 {
+	std::cout<<"sparse Mat ="<<std::endl;
 	for(INT i=0;i<num;i++)
 	{
 		INT begin_idx = this->row_vec[i];
