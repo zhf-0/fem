@@ -41,12 +41,20 @@ void TestMesh()
 	m.DisplayEdgeNode();
 	m.DisplayBdNode();
 	m.DisplayNode2Elem();
+	std::cout<<"======================================="<<std::endl;
+	TriMesh m1(0.0,1.0,0.0,1.0,4,3);
+	m1.InitMesh();
+	m1.DisplayNodeCood();
+	m1.DisplayElemNode();
+	m1.DisplayEdgeNode();
+	m1.DisplayBdNode();
+	m1.DisplayNode2Elem();
 }
 
 int main()
 {
 	/* TestTensor(); */
-	TestFormat();
+	/* TestFormat(); */
 	TestMesh();
 	return 0;
 }

@@ -2,7 +2,9 @@
 #include <unordered_map>
 #include "format.h"
 
-void QuadMesh::InitMesh()
+//==================================================================
+// class Mesh
+void Mesh::InitMesh()
 {
 	GenNodeCood();
 	GenElemNode();
@@ -10,7 +12,7 @@ void QuadMesh::InitMesh()
 	GenNode2Elem();
 }
 
-void QuadMesh::GenNodeCood()
+void Mesh::GenNodeCood()
 {
 	double x_step = (x_max-x_min)/x_num;
 	double y_step = (y_max-y_min)/y_num;
@@ -21,10 +23,6 @@ void QuadMesh::GenNodeCood()
 		for(INT j=0;j<=x_num;j++)
 		{
 			INT idx = i*(x_num+1)+j;
-#if debug == 1
-			node_cood.at(idx,0)= j*x_step; 
-			node_cood.at(idx,1)= i*y_step; 
-#endif
 			node_cood(idx,0)= j*x_step; 
 			node_cood(idx,1)= i*y_step; 
 		}
@@ -32,34 +30,7 @@ void QuadMesh::GenNodeCood()
 
 }
 
-void QuadMesh::GenElemNode()
-{
-	// compute the elem_node matrix
-	for(INT i=0;i<y_num;i++)
-	{
-		for(INT j=0;j<x_num;j++)
-		{
-			INT tmp1 = i*(x_num+1)+j;
-			INT tmp2 = (i+1)*(x_num+1)+j;
-			INT idx = i*x_num+j;
-
-			elem_node(idx,0) = tmp1;
-			elem_node(idx,1) = tmp1+1;
-			elem_node(idx,2) = tmp2+1;
-			elem_node(idx,3) = tmp2;
-#if debug == 1
-			elem_node.at(idx,0) = tmp1;
-			elem_node.at(idx,1) = tmp1+1;
-			elem_node.at(idx,2) = tmp2+1;
-			elem_node.at(idx,3) = tmp2;
-#endif
-		}
-	}
-
-}
-
-
-void QuadMesh::GenEdgeAndBdNode()
+void Mesh::GenEdgeAndBdNode()
 {
 	// compute the edge_node matrix
 	std::string key;
@@ -68,10 +39,10 @@ void QuadMesh::GenEdgeAndBdNode()
 	INT head, tail;
 	for(INT i=0;i<num_elem;i++)
 	{
-		for(INT j=0;j<4;j++)
+		for(INT j=0;j<node_per_elem;j++)
 		{
-			head = elem_node(i,j%4);
-			tail = elem_node(i,(j+1)%4);
+			head = elem_node(i,j%node_per_elem);
+			tail = elem_node(i,(j+1)%node_per_elem);
 			if(head > tail)
 				std::swap(head,tail);
 
@@ -108,13 +79,13 @@ void QuadMesh::GenEdgeAndBdNode()
 	}
 }
 
-void QuadMesh::GenNode2Elem()
+void Mesh::GenNode2Elem()
 {
-	SpaCOO<INT,bool> coo(num_node,num_elem,4*num_elem,true);
+	SpaCOO<INT,bool> coo(num_node,num_elem,node_per_elem*num_elem,true);
 	INT idx = 0;
 	for(INT i=0;i<num_elem;i++)
 	{
-		for(INT j=0;j<4;j++)
+		for(INT j=0;j<node_per_elem;j++)
 		{
 			coo.row_vec[idx] = elem_node(i,j);
 			coo.col_vec[idx] = i;
@@ -125,32 +96,82 @@ void QuadMesh::GenNode2Elem()
 	node2elem = coo;
 }
 
-void QuadMesh::DisplayNodeCood()
+void Mesh::DisplayNodeCood()
 {
 	std::cout<<"node coodinate ";
 	std::cout<<node_cood<<std::endl;
 }
 
-void QuadMesh::DisplayEdgeNode()
+void Mesh::DisplayEdgeNode()
 {
 	std::cout<<"edge nodes ";
 	std::cout<<edge_node<<std::endl;
 }
 
-void QuadMesh::DisplayElemNode()
+void Mesh::DisplayElemNode()
 {
 	std::cout<<"element nodes ";
 	std::cout<<elem_node<<std::endl;
 }
 
-void QuadMesh::DisplayBdNode()
+void Mesh::DisplayBdNode()
 {
 	std::cout<<"bd edge ";
 	std::cout<<bd_edge<<std::endl;
 }
 
-void QuadMesh::DisplayNode2Elem()
+void Mesh::DisplayNode2Elem()
 {
 	std::cout<<"node to element ";
 	node2elem.PrintPartialMat(num_node);
+}
+
+//==================================================================
+// class QuadMesh
+
+void QuadMesh::GenElemNode()
+{
+	// compute the elem_node matrix
+	for(INT i=0;i<y_num;i++)
+	{
+		for(INT j=0;j<x_num;j++)
+		{
+			INT tmp1 = i*(x_num+1)+j;
+			INT tmp2 = (i+1)*(x_num+1)+j;
+			INT idx = i*x_num+j;
+
+			elem_node(idx,0) = tmp1;
+			elem_node(idx,1) = tmp1+1;
+			elem_node(idx,2) = tmp2+1;
+			elem_node(idx,3) = tmp2;
+		}
+	}
+
+}
+
+//==================================================================
+// class TriMesh
+void TriMesh::GenElemNode()
+{
+	// compute the elem_node matrix
+	INT idx = 0;
+	for(INT i=0;i<y_num;i++)
+	{
+		for(INT j=0;j<x_num;j++)
+		{
+			INT tmp1 = i*(x_num+1)+j;
+			INT tmp2 = (i+1)*(x_num+1)+j;
+
+			elem_node(idx,0) = tmp1;
+			elem_node(idx,1) = tmp1+1;
+			elem_node(idx,2) = tmp2+1;
+
+			elem_node(idx+1,0) = tmp1;
+			elem_node(idx+1,1) = tmp2+1;
+			elem_node(idx+1,2) = tmp2;
+
+			idx += 2;
+		}
+	}
+
 }

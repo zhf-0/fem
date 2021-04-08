@@ -566,7 +566,10 @@ void  SpaCOO<INT,DOUBLE>::PrintPartialMat(INT num)
 {
 	std::cout<<"sparse Mat ="<<std::endl;
 	for(INT i=0;i<num;i++)
+	{
+		std::cout<<"     ";
 		std::cout<<this->row_vec[i]<<"   "<<this->col_vec[i]<<"   "<<this->val[i]<<std::endl;
+	}
 }
 
 
@@ -685,7 +688,10 @@ void SpaCSR<INT,DOUBLE>::PrintPartialMat(INT num)
 		INT begin_idx = this->row_vec[i];
 		INT num_entry = this->row_vec[i+1] - begin_idx;
 		for(INT j=0;j<num_entry;j++)
+		{
+			std::cout<<"     ";
 			std::cout<<i<<"   "<<this->col_vec[begin_idx+j]<<"   "<<this->val[begin_idx+j]<<std::endl;
+		}
 	}
 }
 #endif
