@@ -1,7 +1,8 @@
 #include "tensor.hpp"
 #include "mesh.h"
-#include <iostream>
 #include "format.h"
+#include <iostream>
+#include <chrono>
 
 void TestTensor()
 {
@@ -24,6 +25,24 @@ void TestTensor()
 	std::cout<<d<<std::endl;
 }
 
+void TestRepeatedSpaseMat()
+{
+	SpaCOO<int, int> coo(3,3,6);
+	coo.row_vec[0] = 0;coo.row_vec[1] = 0;coo.row_vec[2] = 1;coo.row_vec[3] = 1;
+	coo.row_vec[4] = 1;coo.row_vec[5] = 2;
+
+	coo.col_vec[0] = 0;coo.col_vec[1] = 0;coo.col_vec[2] = 1;coo.col_vec[3] = 1;
+	coo.col_vec[4] = 1;coo.col_vec[5] = 0;
+
+	coo.val[0] = 1;coo.val[1] = 1;coo.val[2] = 1;coo.val[3] = 1;coo.val[4] = 1;
+	coo.val[5] = 1;
+	coo.PrintPartialMat(6);
+
+	SpaCSR<int,int> csr;
+	csr.RepeatedCOO2CSR(coo);
+	csr.PrintPartialMat(3);
+}
+
 void TestFormat()
 {
 	std::string res;
@@ -41,20 +60,34 @@ void TestMesh()
 	m.DisplayEdgeNode();
 	m.DisplayBdNode();
 	m.DisplayNode2Elem();
-	std::cout<<"======================================="<<std::endl;
-	TriMesh m1(0.0,1.0,0.0,1.0,4,3);
-	m1.InitMesh();
-	m1.DisplayNodeCood();
-	m1.DisplayElemNode();
-	m1.DisplayEdgeNode();
-	m1.DisplayBdNode();
-	m1.DisplayNode2Elem();
+	/* std::cout<<"======================================="<<std::endl; */
+	/* TriMesh m1(0.0,1.0,0.0,1.0,4,3); */
+	/* m1.InitMesh(); */
+	/* m1.DisplayNodeCood(); */
+	/* m1.DisplayElemNode(); */
+	/* m1.DisplayEdgeNode(); */
+	/* m1.DisplayBdNode(); */
+	/* m1.DisplayNode2Elem(); */
 }
+
+void TestMeshSpeed()
+{
+	auto begin = std::chrono::system_clock::now();
+	TriMesh m1(0.0,1.0,0.0,1.0,1000,1000);
+	m1.InitMesh();
+	auto end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed = end - begin;
+	std::cout<<"time = "<<elapsed.count()<<std::endl;
+	/* m1.elem_node.Write2file("mat.txt"); */
+}
+
 
 int main()
 {
 	/* TestTensor(); */
+	/* TestRepeatedSpaseMat(); */
 	/* TestFormat(); */
 	TestMesh();
+	/* TestMeshSpeed(); */
 	return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 #include <iostream>
+#include <fstream>
 
 //=========================================================
 // class Vec
@@ -44,12 +45,49 @@ public:
 		return output;
 	}
 	// overload the ()
-	DOUBLE & operator()(INT i);
-	DOUBLE & operator()(INT i) const;
+	inline DOUBLE & operator()(INT i)
+	{
+		return val[i];
+	}
+
+	inline DOUBLE & operator()(INT i) const
+	{
+		return val[i];
+	}
 
 	// add boundary check 
-	DOUBLE & at(INT i);
-	DOUBLE & at(INT i) const;
+	inline DOUBLE & at(INT i)
+	{
+		if(i >= 0 && i<len)
+		{
+			return val[i];
+		}	
+		else
+		{
+			std::cout<<"Vec index is out of range"<<std::endl;
+			std::cout<<"free the memory and exit"<<std::endl;
+			delete[] val;
+			exit(1);
+		}
+	}
+
+	inline DOUBLE & at(INT i) const
+	{
+		if(i >= 0 && i<len)
+		{
+			return val[i];
+		}	
+		else
+		{
+			std::cout<<"Vec index is out of range"<<std::endl;
+			std::cout<<"free the memory and exit"<<std::endl;
+			delete[] val;
+			exit(1);
+		}
+	}
+
+	// write to file
+	virtual void Write2file(std::string f); 
 
 	// get length
 	INT GetLen() const;
@@ -137,50 +175,6 @@ Vec<INT,DOUBLE>::Vec(Vec<INT,DOUBLE> && x)
 
 
 template<typename INT, typename DOUBLE>
-DOUBLE & Vec<INT,DOUBLE>::operator()(INT i)
-{
-	return val[i];
-}
-
-template<typename INT, typename DOUBLE>
-DOUBLE & Vec<INT,DOUBLE>::operator()(INT i) const
-{
-	return val[i];
-}
-
-template<typename INT, typename DOUBLE>
-DOUBLE & Vec<INT,DOUBLE>::at(INT i)
-{
-	if(i >= 0 && i<len)
-	{
-		return val[i];
-	}	
-	else
-	{
-		std::cout<<"Vec index is out of range"<<std::endl;
-		std::cout<<"free the memory and exit"<<std::endl;
-		delete[] val;
-		exit(1);
-	}
-}
-
-template<typename INT, typename DOUBLE>
-DOUBLE & Vec<INT,DOUBLE>::at(INT i) const
-{
-	if(i >= 0 && i<len)
-	{
-		return val[i];
-	}	
-	else
-	{
-		std::cout<<"Vec index is out of range"<<std::endl;
-		std::cout<<"free the memory and exit"<<std::endl;
-		delete[] val;
-		exit(1);
-	}
-}
-
-template<typename INT, typename DOUBLE>
 INT Vec<INT,DOUBLE>::GetLen() const
 {
 	return len;
@@ -195,6 +189,24 @@ Vec<INT,DOUBLE>::~Vec()
 		delete[] val;
 		val = nullptr;
 	}
+}
+
+
+template<typename INT, typename DOUBLE>
+void Vec<INT,DOUBLE>::Write2file(std::string f)
+{
+	std::ofstream out_file(f,std::ios::out);
+	if(!out_file.is_open())
+	{
+		std::cout<<"can't open the file for writing"<<std::endl;
+		exit(1);
+	}
+
+	out_file<<"# "<<len<<std::endl; 
+	for(INT i=0;i<len;i++)
+		out_file<<val[i]<<std::endl;
+
+	out_file.close();
 }
 //=========================================================
 // class Mat
@@ -223,13 +235,50 @@ public:
 
 	// overload the ()
 	using Vec<INT,DOUBLE>::operator();
-	DOUBLE & operator()(INT i, INT j);
-	DOUBLE & operator()(INT i, INT j) const;
+
+	inline DOUBLE & operator()(INT i, INT j)
+	{
+		return this->val[i*col+j];
+	}
+
+	inline DOUBLE & operator()(INT i, INT j) const
+	{
+		return this->val[i*col+j];
+	}
 
 	// add boundary check
 	using Vec<INT,DOUBLE>::at;
-	DOUBLE & at(INT i, INT j);
-	DOUBLE & at(INT i, INT j) const;
+
+	inline DOUBLE & at(INT i, INT j)
+	{
+		if(i >= 0 && i<row && j >= 0 && j < col)
+		{
+			return this->val[i*col+j];
+		}
+		else
+		{
+			std::cout<<"Matrix index is out of range"<<std::endl;
+			std::cout<<"free the memory and exit"<<std::endl;
+			delete[] this->val;
+			exit(1);
+		}
+	}
+
+	inline DOUBLE & at(INT i, INT j) const
+	{
+		if(i >= 0 && i<row && j >= 0 && j < col)
+		{
+			return this->val[i*col+j];
+		}
+		else
+		{
+			std::cout<<"Matrix index is out of range"<<std::endl;
+			std::cout<<"free the memory and exit"<<std::endl;
+			delete[] this->val;
+			exit(1);
+		}
+	}
+
 
 	// overload *
 	friend Mat<INT,DOUBLE> operator* (const Mat<INT,DOUBLE> & a ,const Mat<INT,DOUBLE> &b)
@@ -296,6 +345,8 @@ public:
 	INT GetRow() const;
 	INT GetCol() const;
 
+	virtual void Write2file(std::string f);
+
 	//destructor
 	virtual ~Mat(){}
 
@@ -328,51 +379,6 @@ Mat<INT,DOUBLE> & Mat<INT,DOUBLE>::operator=(Mat<INT,DOUBLE> x)
 
 
 template<typename INT, typename DOUBLE>
-DOUBLE & Mat<INT,DOUBLE>::operator()(INT i, INT j)
-{
-	return this->val[i*col+j];
-}
-
-template<typename INT, typename DOUBLE>
-DOUBLE & Mat<INT,DOUBLE>::operator()(INT i, INT j) const
-{
-	return this->val[i*col+j];
-}
-
-template<typename INT, typename DOUBLE>
-DOUBLE & Mat<INT,DOUBLE>::at(INT i, INT j)
-{
-	if(i >= 0 && i<row && j >= 0 && j < col)
-	{
-		return this->val[i*col+j];
-	}
-	else
-	{
-		std::cout<<"Matrix index is out of range"<<std::endl;
-		std::cout<<"free the memory and exit"<<std::endl;
-		delete[] this->val;
-		exit(1);
-	}
-}
-
-template<typename INT, typename DOUBLE>
-DOUBLE & Mat<INT,DOUBLE>::at(INT i, INT j) const
-{
-	if(i >= 0 && i<row && j >= 0 && j < col)
-	{
-		return this->val[i*col+j];
-	}
-	else
-	{
-		std::cout<<"Matrix index is out of range"<<std::endl;
-		std::cout<<"free the memory and exit"<<std::endl;
-		delete[] this->val;
-		exit(1);
-	}
-}
-
-
-template<typename INT, typename DOUBLE>
 INT Mat<INT,DOUBLE>::GetRow() const
 {
 	return row;
@@ -385,5 +391,24 @@ INT Mat<INT,DOUBLE>::GetCol() const
 }
 
 
+template<typename INT, typename DOUBLE>
+void Mat<INT,DOUBLE>::Write2file(std::string f)
+{
+	std::ofstream out_file(f,std::ios::out);
+	if(!out_file.is_open())
+	{
+		std::cout<<"can't open the file for writing"<<std::endl;
+		exit(1);
+	}
+
+	out_file<<"# "<<row<<"  "<<col<<"  "<<std::endl; 
+	for(INT i=0;i<row;i++)
+	{
+		for(INT j=0;j<col;j++)
+			out_file<<this->val[i*col+j]<<" ";
+		out_file<<std::endl;
+	}
+	out_file.close();
+}
 
 #endif

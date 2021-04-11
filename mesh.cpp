@@ -1,6 +1,4 @@
 #include "mesh.h"
-#include <unordered_map>
-#include "format.h"
 
 //==================================================================
 // class Mesh
@@ -32,11 +30,9 @@ void Mesh::GenNodeCood()
 
 void Mesh::GenEdgeAndBdNode()
 {
-	// compute the edge_node matrix
-	std::string key;
-	std::unordered_map<std::string, bool> edge_map;
-	INT edge_idx = 0;
-	INT head, tail;
+	SpaCOO<INT,int> *coo = new SpaCOO<INT,int>(num_node,num_node,num_elem*node_per_elem);
+
+	long head, tail;
 	for(INT i=0;i<num_elem;i++)
 	{
 		for(INT j=0;j<node_per_elem;j++)
@@ -46,37 +42,37 @@ void Mesh::GenEdgeAndBdNode()
 			if(head > tail)
 				std::swap(head,tail);
 
-			key = fmt::format("{},{}",head,tail);
-
-			if(edge_map.find(key) == edge_map.end())
-			{
-				edge_map.emplace(key,0);
-				edge_node(edge_idx,0) = head;
-				edge_node(edge_idx,1) = tail;
-				edge_idx += 1;
-			}
-			else
-			{
-				edge_map[key] = 1;
-			}
+			INT idx = i*node_per_elem+j;
+			coo->row_vec[idx] = head;
+			coo->col_vec[idx] = tail;
+			coo->val[idx] = 1; 
 		}
-
 	}
 
-	// compute the bd_edge matrix
+	SpaCSR<INT,int> csr;
+	csr.RepeatedCOO2CSR((*coo));
+	delete coo;
+
 	INT bd_idx = 0;
-	for(INT i=0;i<num_edge;i++)
+	for(INT i=0;i<csr.GetRow();i++)
 	{
-		head = edge_node(i,0);
-		tail = edge_node(i,1);
-		key = fmt::format("{},{}",head,tail);
-		if(edge_map[key] == 0)
+		INT begin = csr.row_vec[i];
+		INT end = csr.row_vec[i+1];
+		for(INT j=begin;j<end;j++)
 		{
-			bd_edge(bd_idx,0) = head;
-			bd_edge(bd_idx,1) = tail;
-			bd_idx += 1;
+			INT head = i;
+			INT tail = csr.col_vec[j];
+			edge_node(j,0) = head;
+			edge_node(j,1) = tail;
+			if(csr.val[j] ==1)
+			{
+				bd_edge(bd_idx,0) = head;
+				bd_edge(bd_idx,1) = tail;
+				bd_idx += 1;
+			}
 		}
 	}
+
 }
 
 void Mesh::GenNode2Elem()

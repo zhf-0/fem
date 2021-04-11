@@ -3,6 +3,7 @@
 #include "tensor.hpp"
 #include "sparsemat.hpp"
 #include "base.h"
+#include <unordered_map>
 
 class Mesh
 {
@@ -21,6 +22,7 @@ public:
 	virtual void GenElemNode() = 0;
 	void GenEdgeAndBdNode();
 	void GenNode2Elem();
+
 
 	void DisplayNodeCood();
 	void DisplayEdgeNode();

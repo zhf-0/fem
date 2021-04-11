@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 template<typename INT, typename DOUBLE>
 class SpaMat
@@ -140,7 +141,7 @@ protected:
 
 
 template<typename INT, typename DOUBLE>
-class SpaCSR:SpaMat<INT,DOUBLE>
+class SpaCSR:public SpaMat<INT,DOUBLE>
 {
 public:
 	// constructor
@@ -177,6 +178,8 @@ public:
 
 	// print num rows in csr matrix 
 	void PrintPartialMat(INT num);
+
+	void RepeatedCOO2CSR(SpaCOO<INT,DOUBLE> & coo);
 
 	// overload the operator * for spmv
 	/* friend Vec operator*(const SpaCSR & csr, const Vec & vec); */
@@ -693,5 +696,82 @@ void SpaCSR<INT,DOUBLE>::PrintPartialMat(INT num)
 			std::cout<<i<<"   "<<this->col_vec[begin_idx+j]<<"   "<<this->val[begin_idx+j]<<std::endl;
 		}
 	}
+}
+
+template<typename INT, typename DOUBLE>
+void SpaCSR<INT,DOUBLE>::RepeatedCOO2CSR(SpaCOO<INT,DOUBLE> & coo)
+{
+	SpaCSR csr(coo);
+	INT real_nnz = 0;
+
+	/* std::map<int,int> col_map; */
+	/* /1* std::unordered_map<int,int> col_map; *1/ */
+	/* for(INT i=0;i<csr.GetRow();i++) */
+	/* { */
+	/* 	INT begin_idx = csr.row_vec[i]; */
+	/* 	INT end_idx = csr.row_vec[i+1]; */
+	/* 	for(INT j=begin_idx;j<end_idx;j++) */
+	/* 	{ */
+	/* 		auto it = col_map.find(csr.col_vec[j]); */
+	/* 		if(it == col_map.end()) */
+	/* 			col_map.emplace(csr.col_vec[j],csr.val[j]); */
+	/* 		else */
+	/* 			it->second += csr.val[j]; */
+	/* 	} */
+
+	/* 	if(i == 0) */
+	/* 		coo.row_vec[0] = 0; */
+
+	/* 	real_nnz += col_map.size(); */
+	/* 	INT begin = coo.row_vec[i]; */
+	/* 	/1* coo.row_vec[i+1] = begin + col_map.size(); *1/ */
+	/* 	coo.row_vec[i+1] = real_nnz; */
+	/* 	for(auto it = col_map.begin();it != col_map.end();++it) */
+	/* 	{ */
+	/* 		coo.col_vec[begin] = it->first; */
+	/* 		coo.val[begin] = it->second; */
+	/* 		begin += 1; */
+	/* 	} */
+
+	/* 	col_map.clear(); */
+	/* } */
+
+	for(INT i=0;i<csr.GetRow();i++)
+	{
+		INT begin_idx = csr.row_vec[i];
+		INT end_idx = csr.row_vec[i+1];
+		if(begin_idx < end_idx)
+		{
+			std::sort(&csr.col_vec[begin_idx],&csr.col_vec[end_idx]);
+			coo.col_vec[real_nnz] = csr.col_vec[begin_idx];
+			coo.val[real_nnz] = csr.val[begin_idx];
+			for(INT j=begin_idx+1;j<end_idx;j++)
+			{
+				if(csr.col_vec[j-1] == csr.col_vec[j])
+					coo.val[real_nnz] += csr.val[j];
+				else
+				{
+					real_nnz += 1;
+					coo.col_vec[real_nnz] = csr.col_vec[j];
+					coo.val[real_nnz] = csr.val[j];
+				}
+			}
+
+			real_nnz += 1;
+		}
+		coo.row_vec[i+1] = real_nnz;
+	}
+
+	// transfer the coo to csr 
+	// in fact csr is only the fraction of coo
+	std::swap(this->row_vec,coo.row_vec); 
+	std::swap(this->col_vec,coo.col_vec); 
+	std::swap(this->val,coo.val); 
+	this->row = coo.GetRow();
+	this->col = coo.GetCol();
+	this->nnz = real_nnz;
+	this->row_len = coo.GetRow() + 1;
+	this->col_len = real_nnz;
+	this->val_len = real_nnz;
 }
 #endif
